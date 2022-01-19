@@ -1,6 +1,5 @@
 # For formatting pandas dataframes into excel reports
 
-
 import pandas as pd
 import numpy as np
 
@@ -273,4 +272,35 @@ def format_excel_currency_white(filename, df, sheetname, range1, range2):
                 "style": "Table Style Light 1",
             },
         )
+
+
+def column_fit(filename, df, sheetname):
+    """
+    Function to auto fit the column widths when exporting excel sheets
+
+    Args:
+        filename (str): name of the output excel file
+        df (pandas dataframe): dataframe to be exported
+        sheetname (str): name of the sheet to be exported
+
+    Returns:
+        None
+    """
+    writer = pd.ExcelWriter(filename, engine='xlsxwriter')
+    # send df to writer
+    df.to_excel(writer, sheet_name=sheetname, index=False)
+    # pull worksheet object
+    worksheet = writer.sheets[sheetname]
+    # loop through all columns
+    for idx, col in enumerate(df):
+        series = df[col]
+        # len of largest item
+        max_len = max((
+            series.astype(str).map(len).max(),
+            # len of column name/header
+            len(str(series.name))
+            )) + 1  # adding a little extra space
+        # set column width
+        worksheet.set_column(idx, idx, max_len)
+    writer.save()
 
